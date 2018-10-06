@@ -1,13 +1,15 @@
 #!/bin/sh
 
-# pomodoro.sh to play a sound after pomodoro finished
-# set update frequency to 0 to don't display updates
-# In that case send a USR1 signal to the process if you want to see the elapsed time
-
+# pomodoro.sh
+# to track your pomodoro session from the shell, and play a sound, show
+# notification after pomodoro finished
+# In that case send a `USR1` signal to the process if you want to see the
+# elapsed time
+#
 # The script will update you slack status if slack token set
-# You can set slack token by setting the SLACK_TOKEN env var
-# Or put the token into a gpg encrypted file to $HOME/.secret/slack_token.gpg
-# You can override that path by setting the SLACK_TOKEN_FILE_PATH env var
+# You can set slack token by setting the `SLACK_TOKEN` env var
+# Or put the token into a gpg encrypted file to `$HOME/.secret/slack_token.gpg`
+# You can override that path by setting the `SLACK_TOKEN_FILE_PATH` env var
 
 DEFAULT_MINUTES=25
 NOTIFY_SEND="/usr/bin/notify-send"
@@ -53,6 +55,7 @@ help() {
 	echo "  POMODORO_SLACK_TOKEN_FILE_PATH Path to a gpg encrypted file which content is your slack token"
 	echo "  POMODORO_SLACK_EMOJI An emoji as text which should be shown when you are doing in a pomodoro session"
 	echo "  POMODORO_SLACK_STATUS_TEXT Status message shown during pomodoro session"
+	echo
 	echo "Dependencies:"
 	echo "  gpg if you store your slack token in gpg encrypted file"
 	echo "  curl to call slack api"
