@@ -68,9 +68,9 @@ help() {
 
 get_time_string() {
 	dt=$1
-	local ds=$((dt % 60))
-	local dm=$(((dt / 60) % 60))
-	local dh=$((dt / 3600))
+	local ds="$((dt % 60))"
+	local dm="$(((dt / 60) % 60))"
+	local dh="$((dt / 3600))"
 	printf '%d:%02d:%02d' $dh $dm $ds
 }
 
@@ -86,8 +86,10 @@ slack_call() {
 	if [ -z "$SLACK_TOKEN" ];then
 		return 0
 	fi
-	local api=$1
-	local data=$2
+
+	local api="$1"
+	local data="$2"
+
 	local url="https://slack.com/api/$api"
 
 	if [ -z "$data" ];then
@@ -98,10 +100,13 @@ slack_call() {
 }
 
 set_slack_status() {
-	local emoji=$1
-	local status_text=$2
+	local emoji="$1"
+	local status_text="$2"
+
 	if [ -z "$emoji" ];then
 		data='{"profile": {"status_text": "'$DEFAULT_SLACK_STATUS_TEXT'", "status_emoji": "'$DEFAULT_SLACK_STATUS_EMOJI'"}}'
+	elif [ -z "$status_text" ];then
+		data='{"profile": {"status_emoji": "'$emoji'"}}'
 	else
 		data='{"profile": {"status_emoji": "'$emoji'", "status_text": "'$status_text'"}}'
 	fi
@@ -110,12 +115,13 @@ set_slack_status() {
 }
 
 set_slack_snooze() {
-	local minutes=$1
+	local minutes="$1"
 	slack_call "dnd.setSnooze?num_minutes=$minutes" > /dev/null
 }
 
 get_slack_status() {
 	local STATUS="$(slack_call 'users.profile.get' | jq -r '.profile.status_emoji, .profile.status_text')"
+
 	DEFAULT_SLACK_STATUS_TEXT=$(echo $STATUS | cut -d ' ' -f 2)
 	DEFAULT_SLACK_STATUS_EMOJI=$(echo $STATUS | cut -d ' ' -f 1)
 }
@@ -173,7 +179,6 @@ NO=$(echo $NO | tr '[:lower:]' '[:upper:]')
 
 NO_SLACK=0
 
-echo $NO
 for noopt in $NO;do
 	case $noopt in
 		'SLACK')
@@ -181,8 +186,6 @@ for noopt in $NO;do
 			;;
 	esac
 done
-
-
 
 if [ -z "$SLACK_TOKEN" ] && [ -f "$SLACK_TOKEN_FILE_PATH" ] && [ $NO_SLACK -eq 0 ];then
 	SLACK_TOKEN=$(gpg -d $HOME/.secret/slack_token.gpg 2>/dev/null)
