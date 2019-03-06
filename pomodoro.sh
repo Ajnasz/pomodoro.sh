@@ -167,6 +167,23 @@ stop_pomodoro() {
 	exit 0
 }
 
+start_pomodoro() {
+	echo "Pomodoro will run $MINUTES minutes. PID: $$"
+
+	get_slack_status
+	set_slack_snooze $MINUTES
+	set_slack_status "$SLACK_EMOJI" "$SLACK_STATUS_TEXT"
+
+	while [ $(($(date -u +%s) - $start)) -lt $DURATION ];do
+		sleep 1
+
+		if [ $QUIET -eq 0 ];then
+			show_elapsed_time
+		fi
+	done
+
+}
+
 while getopts "m:a:n:d:l:t:qh" opt;do
 	case $opt in
 		'm')
@@ -225,25 +242,12 @@ if [ -z "$SLACK_TOKEN" ] && [ -f "$SLACK_TOKEN_FILE_PATH" ] && [ $NO_SLACK -eq 0
 	SLACK_TOKEN=$(gpg -d $HOME/.secret/slack_token.gpg 2>/dev/null)
 fi
 
-echo "Pomodoro will run $MINUTES minutes. PID: $$"
-
-get_slack_status
-set_slack_snooze $MINUTES
-set_slack_status "$SLACK_EMOJI" "$SLACK_STATUS_TEXT"
-
 DURATION=$((60 * MINUTES))
 
 trap 'show_elapsed_time' USR1
 trap 'stop_pomodoro' 2
 
-while [ $(($(date -u +%s) - $start)) -lt $DURATION ];do
-	sleep 1
-
-	if [ $QUIET -eq 0 ];then
-		show_elapsed_time
-	fi
-done
-
+start_pomodoro
 stop_pomodoro
 
 exit 0
