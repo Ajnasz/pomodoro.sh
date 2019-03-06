@@ -15,8 +15,15 @@ DEFAULT_MINUTES=25
 NOTIFY_SEND="/usr/bin/notify-send"
 DUNSTIFY="$HOME/bin/dunstify"
 DEFAULT_SOUND="/usr/share/sounds/purple/alert.wav"
+DEFAULT_DESCRIPTION="Pomodoro"
+DEFAULT_LOGFILE="$HOME/.pomodoro.log"
+
 MINUTES=${POMODORO_MINUTES:-$DEFAULT_MINUTES}
 SOUND=${POMODORO_SOUND:-$DEFAULT_SOUND}
+DESCRIPTION=${POMODORO_DESCRIPTION:-$DEFAULT_DESCRIPTION}
+LOGFILE=${POMODORO_LOG_FILE:-$DEFAULT_LOGFILE}
+TAGS=""
+
 DEFAULT_SLACK_TOKE_FILE_PATH="$HOME/.secret/slack_token.gpg"
 SLACK_TOKEN_FILE_PATH=${POMODORO_SLACK_TOKEN_FILE_PATH:-$DEFAULT_SLACK_TOKE_FILE_PATH}
 DEFAULT_SLACK_EMOJI=":tomato:"
@@ -40,6 +47,9 @@ help() {
 	echo "Options:"
 	echo "  -m minutes Duration of the pomodoro session in minutes ($DEFAULT_MINUTES is the default)"
 	echo "  -a alarm_sound_file played after pomodoro finished ($DEFAULT_SOUND is the default)"
+	echo "  -d \"Pomodoro session description\" (\"$DEFAULT_DESCRIPTION\" is the default)"
+	echo "  -l /path/to/logfile ($DEFAULT_LOGFILE is the default)"
+	echo "  -t list,of,tags stored in the log file"
 	echo "  -q Don't show elapsed time"
 	echo "  -n feature Turn off feature."
 	echo "     Available values:"
@@ -52,6 +62,8 @@ help() {
 	echo "Some of the parameters can be configured with environment variables:"
 	echo "  POMODORO_MINUTES Same as -m option. Duration of the pomodoro session in minutes"
 	echo "  POMODORO_SOUND Same as -a option. Sound file played after pomodoro finished"
+	echo "  POMODORO_DESCRIPTION Same as -d option. Description for the session"
+	echo "  POMODORO_LOG_FILE Same as -l option. Log file path"
 	echo "  POMODORO_SLACK_TOKEN_FILE_PATH Path to a gpg encrypted file which content is your slack token"
 	echo "  POMODORO_SLACK_EMOJI An emoji as text which should be shown when you are doing in a pomodoro session"
 	echo "  POMODORO_SLACK_STATUS_TEXT Status message shown during pomodoro session"
@@ -126,14 +138,23 @@ get_slack_status() {
 	DEFAULT_SLACK_STATUS_EMOJI=$(echo $STATUS | cut -d ' ' -f 1)
 }
 
+log_pomodoro_done() {
+	local when=$(date -Iseconds)
+	local duration=$((($(date -u +%s) - $start) / 60))
+	local msg="$when\t$duration\t$TAGS\t$DESCRIPTION"
+
+	echo "$msg" >> $LOGFILE
+}
+
 stop_pomodoro() {
-	echo "stopping"
+	echo "stopping $DESCRIPTION"
 	aplay -q $SOUND
 
 	echo
 	date
 	MSG="Pomodoro finished, take a break!"
 	echo $MSG
+	log_pomodoro_done
 
 	if [ -e "$DUNSTIFY" ];then
 		$DUNSTIFY -p -a "$0" -u normal "$MSG"
@@ -146,7 +167,7 @@ stop_pomodoro() {
 	exit 0
 }
 
-while getopts "m:a:n:qh" opt;do
+while getopts "m:a:n:d:l:t:qh" opt;do
 	case $opt in
 		'm')
 			MINUTES=$OPTARG
@@ -156,6 +177,18 @@ while getopts "m:a:n:qh" opt;do
 			SOUND=$OPTARG
 			;;
 
+		'd')
+			DESCRIPTION=$OPTARG
+			;;
+
+		'l')
+			LOGFILE=$OPTARG
+			;;
+
+		't')
+			TAGS=$OPTARG
+			;;
+
 		'q')
 			QUIET=1
 			;;
@@ -163,6 +196,7 @@ while getopts "m:a:n:qh" opt;do
 		'n')
 			NO="$NO $OPTARG"
 			;;
+
 		'h')
 			help
 			exit 0
