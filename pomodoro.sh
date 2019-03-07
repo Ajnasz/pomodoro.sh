@@ -79,7 +79,7 @@ help() {
 }
 
 get_time_string() {
-	dt=$1
+	local dt=$1
 	local ds="$((dt % 60))"
 	local dm="$(((dt / 60) % 60))"
 	local dh="$((dt / 3600))"
@@ -88,8 +88,8 @@ get_time_string() {
 
 show_elapsed_time() {
 	local elapsed=$(($(date -u +%s) - $start))
-	dt=$(($DURATION - $elapsed))
-	remaining=$(get_time_string "$dt")
+	local dt=$(($DURATION - $elapsed))
+	local remaining=$(get_time_string "$dt")
 
 	echo -n "\r$remaining"
 }
@@ -116,11 +116,11 @@ set_slack_status() {
 	local status_text="$2"
 
 	if [ -z "$emoji" ];then
-		data='{"profile": {"status_text": "'$DEFAULT_SLACK_STATUS_TEXT'", "status_emoji": "'$DEFAULT_SLACK_STATUS_EMOJI'"}}'
+		local data='{"profile": {"status_text": "'$DEFAULT_SLACK_STATUS_TEXT'", "status_emoji": "'$DEFAULT_SLACK_STATUS_EMOJI'"}}'
 	elif [ -z "$status_text" ];then
-		data='{"profile": {"status_emoji": "'$emoji'"}}'
+		local data='{"profile": {"status_emoji": "'$emoji'"}}'
 	else
-		data='{"profile": {"status_emoji": "'$emoji'", "status_text": "'$status_text'"}}'
+		local data='{"profile": {"status_emoji": "'$emoji'", "status_text": "'$status_text'"}}'
 	fi
 
 	slack_call 'users.profile.set' "$data" > /dev/null
@@ -143,7 +143,7 @@ log_pomodoro_done() {
 	local duration=$((($(date -u +%s) - $start) / 60))
 	local msg="$when\t$duration\t$TAGS\t$DESCRIPTION"
 
-	echo "$msg" >> $LOGFILE
+	printf "%s\t%i\t%s\t%s" "$when" $duration "$TAGS" "$DESCRIPTION" >> $LOGFILE
 }
 
 stop_pomodoro() {
