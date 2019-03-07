@@ -143,7 +143,7 @@ log_pomodoro_done() {
 	local duration=$((($(date -u +%s) - $start) / 60))
 	local msg="$when\t$duration\t$TAGS\t$DESCRIPTION"
 
-	printf "%s\t%i\t%s\t%s" "$when" $duration "$TAGS" "$DESCRIPTION" >> $LOGFILE
+	printf "%s\t%i\t%s\t%s\n" "$when" $duration "$TAGS" "$DESCRIPTION" >> $LOGFILE
 }
 
 stop_pomodoro() {
