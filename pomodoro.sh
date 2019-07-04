@@ -31,6 +31,8 @@ DEFAULT_SLACK_STATUS_TEXT=""
 SLACK_EMOJI=${POMODORO_SLACK_EMOJI:-$DEFAULT_SLACK_EMOJI}
 SLACK_STATUS_TEXT=${POMODORO_SLACK_STATUS_TEXT:-$DEFAULT_SLACK_STATUS_TEXT}
 
+PID_FILE="/tmp/pomodoro"
+
 DEFAULT_SLACK_STATUS_EMOJI=""
 DEFAULT_SLACK_STATUS_TEXT=""
 
@@ -91,7 +93,8 @@ show_elapsed_time() {
 	local dt=$(($DURATION - $elapsed))
 	local remaining=$(get_time_string "$dt")
 
-	echo -n "\r$remaining"
+	printf "\r%s" "$remaining"
+	printf "%s" "$remaining" > $PID_FILE
 }
 
 slack_call() {
@@ -164,6 +167,7 @@ stop_pomodoro() {
 	set_slack_snooze 0
 	set_slack_status ''
 
+	rm $PID_FILE
 	exit 0
 }
 
