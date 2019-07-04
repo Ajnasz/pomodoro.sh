@@ -175,10 +175,10 @@ start_pomodoro() {
 	echo "Pomodoro will run $MINUTES minutes. PID: $$"
 
 	get_slack_status
-	set_slack_snooze $MINUTES
+	set_slack_snooze "$MINUTES"
 	set_slack_status "$SLACK_EMOJI" "$SLACK_STATUS_TEXT"
 
-	while [ $(($(date -u +%s) - $start)) -lt $DURATION ];do
+	while [ $(($(date -u +%s) - start)) -lt $DURATION ];do
 		sleep 1
 
 		if [ $QUIET -eq 0 ];then
@@ -230,7 +230,7 @@ while getopts "m:a:n:d:l:t:qh" opt;do
 	esac
 done
 
-NO=$(echo $NO | tr '[:lower:]' '[:upper:]')
+NO=$(echo "$NO" | tr '[:lower:]' '[:upper:]')
 
 NO_SLACK=0
 
