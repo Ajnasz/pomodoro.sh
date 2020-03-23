@@ -91,8 +91,8 @@ get_time_string() {
 }
 
 show_elapsed_time() {
-	local elapsed=$(($(date -u +%s) - $start))
-	local dt=$(($DURATION - $elapsed))
+	local elapsed=$(($(date -u +%s) - start))
+	local dt=$((DURATION - elapsed))
 	local remaining=$(get_time_string "$dt")
 
 	printf "\r%s" "$remaining"
