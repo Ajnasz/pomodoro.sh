@@ -93,7 +93,8 @@ get_time_string() {
 show_elapsed_time() {
 	local elapsed=$(($(date -u +%s) - start))
 	local dt=$((DURATION - elapsed))
-	local remaining=$(get_time_string "$dt")
+	local remaining
+	remaining=$(get_time_string "$dt")
 
 	printf "\r%s" "$remaining"
 	printf "%s" "$remaining" > $PID_FILE
@@ -132,33 +133,37 @@ set_slack_status() {
 }
 
 set_slack_snooze() {
-	local minutes="$1"
+	local minutes
+
+	minutes="$1"
 	slack_call "dnd.setSnooze?num_minutes=$minutes" > /dev/null
 }
 
 get_slack_status() {
-	local STATUS="$(slack_call 'users.profile.get' | jq -r '.profile.status_emoji, .profile.status_text')"
+	local STATUS
+	STATUS="$(slack_call 'users.profile.get')"
 
 	DEFAULT_SLACK_STATUS_TEXT=$(echo $STATUS | cut -d ' ' -f 2)
 	DEFAULT_SLACK_STATUS_EMOJI=$(echo $STATUS | cut -d ' ' -f 1)
 }
 
 log_pomodoro_done() {
-	local when=$(date -Iseconds)
-	local duration=$((($(date -u +%s) - $start) / 60))
-	local msg="$when\t$duration\t$TAGS\t$DESCRIPTION"
+	local when
+	local duration
+	when=$(date -Iseconds)
+	duration=$((($(date -u +%s) - start) / 60))
 
-	printf "%s\t%i\t%s\t%s\n" "$when" $duration "$TAGS" "$DESCRIPTION" >> $LOGFILE
+	printf "%s\t%i\t%s\t%s\n" "$when" $duration "$TAGS" "$DESCRIPTION" >> "$LOGFILE"
 }
 
 stop_pomodoro() {
 	echo "stopping $DESCRIPTION"
-	aplay -q $SOUND
+	aplay -q "$SOUND"
 
 	echo
 	date
 	MSG="Pomodoro finished, take a break!"
-	echo $MSG
+	echo "$MSG"
 	log_pomodoro_done
 
 	if [ -e "$DUNSTIFY" ];then
@@ -245,7 +250,7 @@ for noopt in $NO;do
 done
 
 if [ -z "$SLACK_TOKEN" ] && [ -f "$SLACK_TOKEN_FILE_PATH" ] && [ $NO_SLACK -eq 0 ];then
-	SLACK_TOKEN=$(gpg -d $HOME/.secret/slack_token.gpg 2>/dev/null)
+	SLACK_TOKEN=$(gpg -d "$HOME/.secret/slack_token.gpg" 2>/dev/null)
 fi
 
 DURATION=$((60 * MINUTES))
