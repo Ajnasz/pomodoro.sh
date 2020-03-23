@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/zsh
 
-set -eo pipefail
+set -euo pipefail
 
 # pomodoro.sh
 # to track your pomodoro session from the shell, and play a sound, show
@@ -127,11 +127,10 @@ set_slack_status() {
 		local data='{"profile": {"status_emoji": "'$emoji'", "status_text": "'$status_text'"}}'
 	fi
 
-	slack_call 'users.profile.set' "$data" > /dev/null
+	slack_call 'users.profile.set' "$data" "" > /dev/null
 }
 
 set_default_slack_status() {
-	echo "set default slack status"
 	set_slack_status "$INITIAL_SLACK_STATUS_EMOJI" "$INITIAL_SLACK_STATUS_TEXT"
 }
 
@@ -139,12 +138,12 @@ set_slack_snooze() {
 	local minutes
 
 	minutes="$1"
-	slack_call "dnd.setSnooze?num_minutes=$minutes" > /dev/null
+	slack_call "dnd.setSnooze?num_minutes=$minutes" "" > /dev/null
 }
 
 get_slack_status() {
 	local STATUS
-	STATUS="$(slack_call 'users.profile.get')"
+	STATUS="$(slack_call 'users.profile.get' '')"
 
 	INITIAL_SLACK_STATUS_TEXT=$(echo "$STATUS" | jq -r '.profile.status_text')
 	INITIAL_SLACK_STATUS_EMOJI=$(echo "$STATUS" | jq -r '.profile.status_emoji')
