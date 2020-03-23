@@ -110,9 +110,9 @@ slack_call() {
 	local url="https://slack.com/api/$api"
 
 	if [ -z "$data" ];then
-		curl -s -H 'Content-Type: application/json; charset=utf-8' -H "Authorization: Bearer $SLACK_TOKEN" $url
+		curl -s -H 'Content-Type: application/json; charset=utf-8' -H "Authorization: Bearer $SLACK_TOKEN" "$url"
 	else
-		curl -s -H 'Content-Type: application/json; charset=utf-8' -H "Authorization: Bearer $SLACK_TOKEN" -d "$data" $url
+		curl -s -H 'Content-Type: application/json; charset=utf-8' -H "Authorization: Bearer $SLACK_TOKEN" -d "$data" "$url"
 	fi
 }
 
