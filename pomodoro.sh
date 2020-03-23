@@ -35,8 +35,8 @@ SLACK_STATUS_TEXT=${POMODORO_SLACK_STATUS_TEXT:-$DEFAULT_SLACK_STATUS_TEXT}
 
 PID_FILE="/tmp/pomodoro"
 
-DEFAULT_SLACK_STATUS_EMOJI=""
-DEFAULT_SLACK_STATUS_TEXT=""
+INITIAL_SLACK_STATUS_EMOJI=""
+INITIAL_SLACK_STATUS_TEXT=""
 
 SLACK_TOKEN=""
 NO=""
@@ -121,15 +121,18 @@ set_slack_status() {
 	local emoji="$1"
 	local status_text="$2"
 
-	if [ -z "$emoji" ];then
-		local data='{"profile": {"status_text": "'$DEFAULT_SLACK_STATUS_TEXT'", "status_emoji": "'$DEFAULT_SLACK_STATUS_EMOJI'"}}'
-	elif [ -z "$status_text" ];then
+	if [ -z "$status_text" ];then
 		local data='{"profile": {"status_emoji": "'$emoji'"}}'
 	else
 		local data='{"profile": {"status_emoji": "'$emoji'", "status_text": "'$status_text'"}}'
 	fi
 
 	slack_call 'users.profile.set' "$data" > /dev/null
+}
+
+set_default_slack_status() {
+	echo "set default slack status"
+	set_slack_status "$INITIAL_SLACK_STATUS_EMOJI" "$INITIAL_SLACK_STATUS_TEXT"
 }
 
 set_slack_snooze() {
@@ -143,8 +146,8 @@ get_slack_status() {
 	local STATUS
 	STATUS="$(slack_call 'users.profile.get')"
 
-	DEFAULT_SLACK_STATUS_TEXT=$(echo $STATUS | cut -d ' ' -f 2)
-	DEFAULT_SLACK_STATUS_EMOJI=$(echo $STATUS | cut -d ' ' -f 1)
+	INITIAL_SLACK_STATUS_TEXT=$(echo "$STATUS" | jq -r '.profile.status_text')
+	INITIAL_SLACK_STATUS_EMOJI=$(echo "$STATUS" | jq -r '.profile.status_emoji')
 }
 
 log_pomodoro_done() {
@@ -172,7 +175,7 @@ stop_pomodoro() {
 		$NOTIFY_SEND -p -a "$0" -u normal "$MSG"
 	fi
 	set_slack_snooze 0
-	set_slack_status ''
+	set_default_slack_status
 
 	rm $PID_FILE
 	exit 0
