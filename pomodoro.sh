@@ -252,7 +252,7 @@ for noopt in $NO;do
 done
 
 if [ -z "$SLACK_TOKEN" ] && [ -f "$SLACK_TOKEN_FILE_PATH" ] && [ $NO_SLACK -eq 0 ];then
-	SLACK_TOKEN=$(gpg -d "$HOME/.secret/slack_token.gpg" 2>/dev/null)
+	SLACK_TOKEN=$(gpg -d "$SLACK_TOKEN_FILE_PATH" 2>/dev/null)
 fi
 
 DURATION=$((60 * MINUTES))
