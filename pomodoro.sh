@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -eo pipefail
+
 # pomodoro.sh
 # to track your pomodoro session from the shell, and play a sound, show
 # notification after pomodoro finished
