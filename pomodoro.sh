@@ -118,14 +118,13 @@ slack_call() {
 }
 
 set_slack_status() {
-	local emoji="$1"
-	local status_text="$2"
+	local emoji
+	emoji="$1"
+	local status_text
+	status_text="$2"
 
-	if [ -z "$status_text" ];then
-		local data='{"profile": {"status_emoji": "'$emoji'"}}'
-	else
-		local data='{"profile": {"status_emoji": "'$emoji'", "status_text": "'$status_text'"}}'
-	fi
+	local data
+	data=$(jq -c -n --arg emoji "$emoji" --arg status_text "$status_text" '{"profile": {"status_emoji": $emoji, "status_text": $status_text}}')
 
 	slack_call 'users.profile.set' "$data" "" > /dev/null
 }
