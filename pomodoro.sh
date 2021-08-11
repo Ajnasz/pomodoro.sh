@@ -85,7 +85,7 @@ help() {
 get_time_string() {
 	local dt=$1
 	local ds="$((dt % 60))"
-	local dm="$(((dt / 60) % 60))"
+	local dm="$(( (dt / 60) % 60))"
 	local dh="$((dt / 3600))"
 	printf '%d:%02d:%02d' $dh $dm $ds
 }
@@ -141,11 +141,11 @@ set_slack_snooze() {
 }
 
 get_slack_status() {
-	local STATUS
-	STATUS="$(slack_call 'users.profile.get' '')"
+	local current_status
+	current_status="$(slack_call 'users.profile.get' '')"
 
-	INITIAL_SLACK_STATUS_TEXT=$(echo "$STATUS" | jq -r '.profile.status_text')
-	INITIAL_SLACK_STATUS_EMOJI=$(echo "$STATUS" | jq -r '.profile.status_emoji')
+	INITIAL_SLACK_STATUS_TEXT=$(echo "$current_status" | jq -r '.profile.status_text')
+	INITIAL_SLACK_STATUS_EMOJI=$(echo "$current_status" | jq -r '.profile.status_emoji')
 }
 
 log_pomodoro_done() {
@@ -163,14 +163,15 @@ stop_pomodoro() {
 
 	echo
 	date
-	MSG="Pomodoro finished, take a break!"
-	echo "$MSG"
+	local msg
+	msg="Pomodoro finished, take a break!"
+	echo $msg
 	log_pomodoro_done
 
 	if [ -e "$DUNSTIFY" ];then
-		$DUNSTIFY -p -a "$0" -u normal "$MSG"
+		$DUNSTIFY -p -a "$0" -u normal "$msg"
 	else
-		$NOTIFY_SEND -p -a "$0" -u normal "$MSG"
+		$NOTIFY_SEND -p -a "$0" -u normal "$msg"
 	fi
 	set_slack_snooze 0
 	set_default_slack_status
@@ -193,7 +194,6 @@ start_pomodoro() {
 			show_elapsed_time
 		fi
 	done
-
 }
 
 while getopts "m:a:n:d:l:t:qh" opt;do
