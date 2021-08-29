@@ -79,7 +79,7 @@ help() {
 	echo "  aplay to play sound after pomodoro finished"
 	echo "  date to show elapsed time"
 	echo
-	echo "Usage $0 [-m minutes] [-a sound_file.wav] [-q]"
+	echo "Usage "$0" [-m minutes] [-a sound_file.wav] [-q]"
 }
 
 get_time_string() {
@@ -165,7 +165,7 @@ stop_pomodoro() {
 	date
 	local msg
 	msg="Pomodoro finished, take a break!"
-	echo $msg
+	echo "$msg"
 	log_pomodoro_done
 
 	if [ -e "$DUNSTIFY" ];then
@@ -227,12 +227,12 @@ while getopts "m:a:n:d:l:t:qh" opt;do
 			;;
 
 		'h')
-			help
+			help "$0"
 			exit 0
 			;;
 
 		[?])
-			help
+			help "$0"
 			exit 1
 			;;
 	esac
