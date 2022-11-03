@@ -17,6 +17,7 @@ DEFAULT_MINUTES=25
 NOTIFY_SEND="/usr/bin/notify-send"
 DUNSTIFY="$HOME/bin/dunstify"
 DEFAULT_SOUND="/usr/share/sounds/purple/alert.wav"
+JQ="$(command -v gojq | command -v jq)"
 DEFAULT_DESCRIPTION="Pomodoro"
 DEFAULT_LOGFILE="$HOME/.pomodoro.log"
 
@@ -75,7 +76,7 @@ help() {
 	echo "Dependencies:"
 	echo "  gpg if you store your slack token in gpg encrypted file"
 	echo "  curl to call slack api"
-	echo "  jq for slack related functions: https://stedolan.github.io/jq/"
+	echo "  jq or gojq for slack related functions: https://stedolan.github.io/jq/, https://github.com/itchyny/gojq"
 	echo "  aplay to play sound after pomodoro finished"
 	echo "  date to show elapsed time"
 	echo
@@ -124,7 +125,7 @@ set_slack_status() {
 	status_text="$2"
 
 	local data
-	data=$(jq -c -n --arg emoji "$emoji" --arg status_text "$status_text" '{"profile": {"status_emoji": $emoji, "status_text": $status_text}}')
+	data=$($JQ -c -n --arg emoji "$emoji" --arg status_text "$status_text" '{"profile": {"status_emoji": $emoji, "status_text": $status_text}}')
 
 	slack_call 'users.profile.set' "$data" "" > /dev/null
 }
@@ -144,8 +145,8 @@ get_slack_status() {
 	local current_status
 	current_status="$(slack_call 'users.profile.get' '')"
 
-	INITIAL_SLACK_STATUS_TEXT=$(echo "$current_status" | jq -r '.profile.status_text')
-	INITIAL_SLACK_STATUS_EMOJI=$(echo "$current_status" | jq -r '.profile.status_emoji')
+	INITIAL_SLACK_STATUS_TEXT=$(echo "$current_status" | $JQ -r '.profile.status_text')
+	INITIAL_SLACK_STATUS_EMOJI=$(echo "$current_status" | $JQ -r '.profile.status_emoji')
 }
 
 log_pomodoro_done() {
