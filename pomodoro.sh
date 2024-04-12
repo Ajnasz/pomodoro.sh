@@ -16,13 +16,15 @@ set -euo pipefail
 DEFAULT_MINUTES=25
 NOTIFY_SEND="/usr/bin/notify-send"
 DUNSTIFY="$HOME/bin/dunstify"
-DEFAULT_SOUND="/usr/share/sounds/purple/alert.wav"
+DEFAULT_SOUND="/home/ajnasz/.local/share/sounds/alert.wav"
+DEFAULT_SOUND_PLAYER="mplayer"
 JQ="$(command -v gojq | command -v jq)"
 DEFAULT_DESCRIPTION="Pomodoro"
 DEFAULT_LOGFILE="$HOME/.pomodoro.log"
 
 MINUTES=${POMODORO_MINUTES:-$DEFAULT_MINUTES}
 SOUND=${POMODORO_SOUND:-$DEFAULT_SOUND}
+SOUND_PLAYER=${POMODORO_SOUND_PLAYER:-$DEFAULT_SOUND_PLAYER}
 DESCRIPTION=${POMODORO_DESCRIPTION:-$DEFAULT_DESCRIPTION}
 LOGFILE=${POMODORO_LOG_FILE:-$DEFAULT_LOGFILE}
 TAGS=""
@@ -52,6 +54,7 @@ help() {
 	echo "Options:"
 	echo "  -m minutes Duration of the pomodoro session in minutes ($DEFAULT_MINUTES is the default)"
 	echo "  -a alarm_sound_file played after pomodoro finished ($DEFAULT_SOUND is the default)"
+	echo "  -p program used to play the sound after pomodoro finished ($DEFAULT_SOUND_PLAYER is the default)"
 	echo "  -d \"Pomodoro session description\" (\"$DEFAULT_DESCRIPTION\" is the default)"
 	echo "  -l /path/to/logfile ($DEFAULT_LOGFILE is the default)"
 	echo "  -t list,of,tags stored in the log file"
@@ -67,6 +70,7 @@ help() {
 	echo "Some of the parameters can be configured with environment variables:"
 	echo "  POMODORO_MINUTES Same as -m option. Duration of the pomodoro session in minutes"
 	echo "  POMODORO_SOUND Same as -a option. Sound file played after pomodoro finished"
+	echo "  POMODORO_SOUND_PLAYER Same as -p option. Program used to play the sound after pomodoro finished"
 	echo "  POMODORO_DESCRIPTION Same as -d option. Description for the session"
 	echo "  POMODORO_LOG_FILE Same as -l option. Log file path"
 	echo "  POMODORO_SLACK_TOKEN_FILE_PATH Path to a gpg encrypted file which content is your slack token"
@@ -160,7 +164,11 @@ log_pomodoro_done() {
 
 stop_pomodoro() {
 	echo "stopping $DESCRIPTION"
-	aplay -q "$SOUND"
+  if [ -f "$SOUND" ];then
+    $SOUND_PLAYER "$SOUND" &>/dev/null
+  else
+      echo "sound file not found: $SOUND" >&2
+  fi
 
 	echo
 	date
@@ -205,6 +213,10 @@ while getopts "m:a:n:d:l:t:qh" opt;do
 
 		'a')
 			SOUND=$OPTARG
+			;;
+
+		'p')
+			SOUND_PLAYER=$OPTARG
 			;;
 
 		'd')
